@@ -7,6 +7,14 @@ interface PaymentStatus {
   statusMessage: "구독중" | "Free";
 }
 
+interface Payment {
+  transaction_key: string | null;
+  created_at?: string;
+  status: string;
+  start_at: string;
+  end_grace_at: string;
+}
+
 /**
  * 구독 상태 조회 Hook
  * payment 테이블에서 현재 활성 구독 상태를 조회합니다.
@@ -45,7 +53,7 @@ export const usePaymentStatus = () => {
         }
 
         // 2. transaction_key로 그룹화하고 각 그룹에서 created_at 최신 1건씩 추출
-        const groupedPayments = new Map<string, any>();
+        const groupedPayments = new Map<string, Payment>();
         for (const payment of payments) {
           const key = payment.transaction_key;
           if (!key) continue;
