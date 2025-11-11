@@ -3,52 +3,47 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { usePaymentCancel } from "./hooks/index.payment.cancel.hook";
+import { usePaymentStatus } from "./hooks/index.payment.status.hook";
 
 interface UserProfile {
   profileImage: string;
   nickname: string;
   bio: string;
-  subscriptionStatus: "subscribed" | "unsubscribed";
   joinDate: string;
-  transactionKey?: string;
 }
 
 const mockUserData: UserProfile = {
   profileImage: "https://images.unsplash.com/photo-1613145997970-db84a7975fbb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9maWxlJTIwcG9ydHJhaXQlMjBwZXJzb258ZW58MXx8fHwxNzYyNTkxMjU5fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
   nickname: "테크러버",
   bio: "최신 IT 트렌드와 개발 이야기를 공유합니다",
-  subscriptionStatus: "subscribed",
   joinDate: "2024.03",
-  transactionKey: "payment_1762829588364_z2c7lrs" // 실제로는 데이터베이스에서 가져와야 함
 };
 
 export default function GlossaryMagazinesMypage() {
   const router = useRouter();
-  const [user, setUser] = useState<UserProfile>(mockUserData);
+  const [user] = useState<UserProfile>(mockUserData);
   const { handleCancelSubscription: cancelSubscription } = usePaymentCancel();
+  const { paymentStatus, isLoading } = usePaymentStatus();
 
   const handleBackToList = () => {
     router.push('/magazines');
   };
 
   const handleSubscriptionToggle = () => {
-    setUser(prev => ({
-      ...prev,
-      subscriptionStatus: prev.subscriptionStatus === "subscribed" ? "unsubscribed" : "subscribed"
-    }));
+    router.push('/payments');
   };
 
   const handleCancelSubscription = async () => {
-    if (!user.transactionKey) {
+    if (!paymentStatus.transactionKey) {
       alert("구독 정보를 찾을 수 없습니다.");
       return;
     }
-    await cancelSubscription(user.transactionKey);
+    await cancelSubscription(paymentStatus.transactionKey);
     // 성공적으로 취소되면 hook에서 페이지 이동이 처리되므로 상태 업데이트는 불필요
     // 하지만 사용자가 취소하거나 실패한 경우를 대비해 여기서는 상태를 업데이트하지 않음
   };
 
-  const isSubscribed = user.subscriptionStatus === "subscribed";
+  const isSubscribed = paymentStatus.isSubscribed;
 
   return (
     <div className="mypage-wrapper">
@@ -81,8 +76,12 @@ export default function GlossaryMagazinesMypage() {
         <div className={`mypage-subscription-card ${isSubscribed ? 'active' : ''}`}>
           <div className="mypage-subscription-header">
             <h3 className="mypage-card-title">구독 플랜</h3>
-            {isSubscribed && (
-              <span className="mypage-badge-active">구독중</span>
+            {isLoading ? (
+              <span className="mypage-badge-active">로딩중...</span>
+            ) : isSubscribed ? (
+              <span className="mypage-badge-active">{paymentStatus.statusMessage}</span>
+            ) : (
+              <span className="mypage-badge-inactive">{paymentStatus.statusMessage}</span>
             )}
           </div>
 
@@ -112,6 +111,7 @@ export default function GlossaryMagazinesMypage() {
               <button 
                 className="mypage-cancel-btn"
                 onClick={handleCancelSubscription}
+                disabled={!paymentStatus.transactionKey}
               >
                 구독 취소
               </button>
