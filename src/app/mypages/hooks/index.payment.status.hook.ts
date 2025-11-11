@@ -63,10 +63,12 @@ export const usePaymentStatus = () => {
             groupedPayments.set(key, payment);
           } else {
             const existing = groupedPayments.get(key);
-            const existingDate = new Date(existing.created_at || 0);
-            const currentDate = new Date(payment.created_at || 0);
-            if (currentDate > existingDate) {
-              groupedPayments.set(key, payment);
+            if (existing) {
+              const existingDate = new Date(existing.created_at || 0);
+              const currentDate = new Date(payment.created_at || 0);
+              if (currentDate > existingDate) {
+                groupedPayments.set(key, payment);
+              }
             }
           }
         }
