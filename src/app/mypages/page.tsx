@@ -19,7 +19,7 @@ const mockUserData: UserProfile = {
   bio: "최신 IT 트렌드와 개발 이야기를 공유합니다",
   subscriptionStatus: "subscribed",
   joinDate: "2024.03",
-  transactionKey: "mock_transaction_key_123" // 실제로는 데이터베이스에서 가져와야 함
+  transactionKey: "payment_1762829588364_z2c7lrs" // 실제로는 데이터베이스에서 가져와야 함
 };
 
 export default function GlossaryMagazinesMypage() {
